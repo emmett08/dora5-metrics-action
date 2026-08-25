@@ -68,7 +68,7 @@ Emit `exposed` only after independently verifying that the immutable release ser
 
 ## Mutation behaviour
 
-The action spaces dependent writes by one second and never retries a deployment or deployment-status mutation automatically. A timeout can leave a mutation's result ambiguous; first reconcile the stable `event-id` and GitHub deployment records before retrying a job.
+The action serializes its writes and applies a one-second mutation interval, including across separate `exposed` and `completed` invocations. It never retries a deployment or deployment-status mutation automatically. A timeout can leave a mutation's result ambiguous; first reconcile the stable `event-id` and GitHub deployment records before retrying a job.
 
 ## Development
 
