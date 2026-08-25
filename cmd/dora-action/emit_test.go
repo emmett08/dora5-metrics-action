@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/emmett08/dora5-metrics-action/event"
 )
@@ -14,8 +15,18 @@ func validPayload() event.Payload {
 		Repository: "example/service", WorkflowPath: ".github/workflows/deploy.yml", RunID: 1, RunAttempt: 1,
 		JobName: "deploy", RawEnvironmentName: "service-production", CommitSHA: strings.Repeat("a", 40),
 		ReleaseUnitRef: "sha256:" + strings.Repeat("b", 64), RolloutGroupKey: "rollout-1", DeliveryModel: "github_actions",
-		ServiceID: "service", TargetID: "production", TargetSetID: "production-set", ProductionTraffic: &production, FinalStage: &final,
+		EventTimeUTC: time.Unix(1, 0).UTC(),
+		ServiceID:    "service", TargetID: "production", TargetSetID: "production-set", ProductionTraffic: &production, FinalStage: &final,
 		ChangeSHAs: []string{strings.Repeat("c", 40)}, ChangeRelationSource: "release_manifest", WorkType: "planned",
+	}
+}
+
+func TestEventIdentityRejectsOutputInjection(t *testing.T) {
+	payload := validPayload()
+	payload.EventID = eventIdentity(payload.Repository, payload.RunID, payload.RunAttempt, payload.JobName, "rollout\nstatus-id=attacker")
+	payload.WorkReason = "approved release"
+	if err := event.Validate(payload); err == nil {
+		t.Fatal("control character in event identity was accepted")
 	}
 }
 

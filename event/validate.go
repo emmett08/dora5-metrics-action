@@ -52,12 +52,24 @@ func Validate(payload Payload) error {
 		if strings.TrimSpace(value) == "" {
 			missing = append(missing, field)
 		}
+		if strings.ContainsAny(value, "\x00\r\n") {
+			return fmt.Errorf("%s contains a control character", field)
+		}
 	}
 	if payload.EventVersion != Version {
 		return fmt.Errorf("event_version must be %q", Version)
 	}
 	if payload.SourceSystem != "github_actions" || payload.DeliveryModel != "github_actions" {
 		return errors.New("source_system and delivery_model must be github_actions")
+	}
+	if strings.Count(payload.Repository, "/") != 1 {
+		return errors.New("repository must be owner/name")
+	}
+	if normalized := NormalizeWorkflowPath(payload.WorkflowPath); normalized != payload.WorkflowPath || !strings.HasPrefix(normalized, ".github/workflows/") || (!strings.HasSuffix(strings.ToLower(normalized), ".yml") && !strings.HasSuffix(strings.ToLower(normalized), ".yaml")) {
+		return errors.New("workflow_path must be a normalized .github/workflows YAML path")
+	}
+	if payload.EventTimeUTC.IsZero() {
+		return errors.New("event_time_utc is required")
 	}
 	if payload.RunID <= 0 || payload.RunAttempt <= 0 {
 		missing = append(missing, "run_id/run_attempt")
