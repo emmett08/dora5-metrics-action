@@ -55,6 +55,9 @@ func TestRuntimeIdentityIsInferredFromGitHubContext(t *testing.T) {
 }
 
 func TestRuntimeIdentityFailsClosedOutsideActions(t *testing.T) {
+	for _, name := range []string{"GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB", "GITHUB_WORKFLOW_REF"} {
+		t.Setenv(name, "")
+	}
 	if _, err := loadRuntimeIdentity(); err == nil {
 		t.Fatal("missing GitHub Actions runtime variables were accepted")
 	}
