@@ -1,0 +1,6 @@
+.git
+.dora
+config
+examples
+internal/**/*_test.go
+README.md
