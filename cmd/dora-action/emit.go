@@ -133,6 +133,12 @@ func emitCommand(ctx context.Context, arguments []string, stdout, stderr io.Writ
 			}
 			description = event.CompletionDescription(*result, changed)
 		}
+		// GitHub recommends serial mutation requests with at least one second
+		// between them to avoid secondary rate limits. Each action invocation
+		// observes that boundary even when the preceding step just completed.
+		if err := waitMutationInterval(ctx); err != nil {
+			return err
+		}
 		statusID, err := api.CreateDeploymentStatus(ctx, runtime.Repository, *deploymentID, githubapi.CreateDeploymentStatusRequest{
 			State: state, Description: description, Environment: *environment, EnvironmentURL: *environmentURL, LogURL: *logURL, AutoInactive: false,
 		})
