@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/emmett08/dora5-metrics-action/main/event/schema/deployment-payload-v1.schema.json",
+  "title": "DORA 5 rollout event payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_version", "event_id", "source_system", "repository",
+    "workflow_path", "run_id", "run_attempt", "job_name", "commit_sha",
+    "ref_name", "raw_environment_name", "release_unit_ref",
+    "rollout_group_key", "target_set_id", "delivery_model",
+    "event_time_utc", "manual_invocation", "service_id", "target_id",
+    "production_traffic", "final_stage"
+  ],
+  "properties": {
+    "event_version": { "const": "1" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "source_system": { "const": "github_actions" },
+    "repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "workflow_path": { "type": "string", "pattern": "^\\.github/workflows/.+\\.ya?ml$" },
+    "run_id": { "type": "integer", "minimum": 1 },
+    "run_attempt": { "type": "integer", "minimum": 1 },
+    "job_name": { "type": "string", "minLength": 1 },
+    "commit_sha": { "type": "string", "pattern": "^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$" },
+    "ref_name": { "type": "string" },
+    "raw_environment_name": { "type": "string", "minLength": 1 },
+    "release_unit_ref": {
+      "type": "string",
+      "oneOf": [
+        { "pattern": "(?:^|@)sha256:[0-9a-fA-F]{64}$" },
+        { "pattern": "(?:^|@)sha512:[0-9a-fA-F]{128}$" }
+      ]
+    },
+    "rollout_group_key": { "type": "string", "minLength": 1 },
+    "target_set_id": { "type": "string", "minLength": 1 },
+    "delivery_model": { "const": "github_actions" },
+    "event_time_utc": { "type": "string", "format": "date-time" },
+    "manual_invocation": { "type": "boolean" },
+    "service_id": { "type": "string", "minLength": 1 },
+    "target_id": { "type": "string", "minLength": 1 },
+    "production_traffic": { "type": "boolean" },
+    "final_stage": { "type": "boolean" },
+    "release_changed": { "type": "boolean" },
+    "change_shas": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$" }
+    },
+    "change_relation_source": { "enum": ["release_manifest", "direct_commit"] },
+    "work_type": { "enum": ["planned", "unplanned_remediation"] },
+    "work_reason": { "type": "string", "minLength": 1 }
+  },
+  "dependentRequired": {
+    "change_shas": ["change_relation_source"],
+    "work_type": ["work_reason"]
+  }
+}

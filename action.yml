@@ -1,0 +1,90 @@
+name: DORA 5 rollout event
+description: Emit a versioned rollout fact through the GitHub Deployments API.
+author: Emmett Miller
+branding:
+  icon: activity
+  color: blue
+inputs:
+  event:
+    description: started, exposed, or completed
+    required: true
+  deployment-id:
+    description: Deployment ID returned by the started event
+    default: "0"
+  environment:
+    description: Exact GitHub environment label; the action does not create an Actions environment
+    required: true
+  release-unit-ref:
+    description: Immutable artefact or release-manifest digest
+    default: ""
+  rollout-group-key:
+    description: Stable identifier shared by every stage in one rollout
+    default: ""
+  service-id:
+    description: Stable service ID
+    default: ""
+  target-id:
+    description: Stable deployment target ID
+    default: ""
+  target-set-id:
+    description: Stable required target-set ID
+    default: ""
+  production-traffic:
+    description: Whether this target serves real production traffic
+    default: ""
+  final-stage:
+    description: Whether this is a configured final rollout stage
+    default: ""
+  release-changed:
+    description: Post-deployment verification; completed also accepts unknown
+    default: ""
+  change-shas:
+    description: Comma-separated original service-affecting source commits
+    default: ""
+  change-relation-source:
+    description: release_manifest or direct_commit
+    default: ""
+  work-type:
+    description: planned or unplanned_remediation
+    default: ""
+  work-reason:
+    description: Recorded reason for the deployment purpose
+    default: ""
+  result:
+    description: success, failure, cancelled, skipped, or error
+    default: ""
+  log-url:
+    description: Full URL for the deployment log
+    default: ""
+  environment-url:
+    description: Full URL for the deployed environment
+    default: ""
+outputs:
+  deployment-id:
+    description: GitHub deployment ID created by a started event
+  status-id:
+    description: GitHub deployment-status ID
+  event-id:
+    description: Stable DORA 5 event identity created by a started event
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - --event=${{ inputs.event }}
+    - --deployment-id=${{ inputs.deployment-id }}
+    - --environment=${{ inputs.environment }}
+    - --release-unit-ref=${{ inputs.release-unit-ref }}
+    - --rollout-group-key=${{ inputs.rollout-group-key }}
+    - --service-id=${{ inputs.service-id }}
+    - --target-id=${{ inputs.target-id }}
+    - --target-set-id=${{ inputs.target-set-id }}
+    - --production-traffic=${{ inputs.production-traffic }}
+    - --final-stage=${{ inputs.final-stage }}
+    - --release-changed=${{ inputs.release-changed }}
+    - --change-shas=${{ inputs.change-shas }}
+    - --change-relation-source=${{ inputs.change-relation-source }}
+    - --work-type=${{ inputs.work-type }}
+    - --work-reason=${{ inputs.work-reason }}
+    - --result=${{ inputs.result }}
+    - --log-url=${{ inputs.log-url }}
+    - --environment-url=${{ inputs.environment-url }}
