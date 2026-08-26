@@ -90,19 +90,37 @@ func Validate(payload Payload) error {
 	if len(payload.ChangeSHAs) > 0 && payload.ChangeRelationSource == "" {
 		return errors.New("change_relation_source is required when change_shas are supplied")
 	}
+	if len(payload.ChangeSHAs) == 0 && payload.ChangeRelationSource != "" {
+		return errors.New("change_shas are required when change_relation_source is supplied")
+	}
 	if payload.ChangeRelationSource != "" && payload.ChangeRelationSource != "release_manifest" && payload.ChangeRelationSource != "direct_commit" {
 		return errors.New("change_relation_source must be release_manifest or direct_commit")
 	}
+	seenChangeSHAs := make(map[string]struct{}, len(payload.ChangeSHAs))
 	for _, sha := range payload.ChangeSHAs {
 		if !hexIdentifier(sha, 40, 64) {
 			return fmt.Errorf("change SHA %q is not a 40- or 64-character Git commit ID", sha)
 		}
+		key := strings.ToLower(sha)
+		if _, exists := seenChangeSHAs[key]; exists {
+			return fmt.Errorf("change SHA %q is duplicated", sha)
+		}
+		seenChangeSHAs[key] = struct{}{}
+	}
+	if payload.ChangeRelationSource == "direct_commit" && (len(payload.ChangeSHAs) != 1 || !strings.EqualFold(payload.ChangeSHAs[0], payload.CommitSHA)) {
+		return errors.New("direct_commit requires exactly one change SHA equal to commit_sha")
 	}
 	if payload.WorkType != "" && payload.WorkType != "planned" && payload.WorkType != "unplanned_remediation" {
 		return errors.New("work_type must be planned or unplanned_remediation")
 	}
 	if payload.WorkType != "" && strings.TrimSpace(payload.WorkReason) == "" {
 		return errors.New("work_reason is required when work_type is supplied")
+	}
+	if payload.WorkType == "" && payload.WorkReason != "" {
+		return errors.New("work_type is required when work_reason is supplied")
+	}
+	if strings.ContainsAny(payload.WorkReason, "\x00\r\n") {
+		return errors.New("work_reason contains a control character")
 	}
 	return nil
 }

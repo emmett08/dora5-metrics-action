@@ -7,10 +7,16 @@ import "strings"
 func NormalizeWorkflowPath(value string) string {
 	value = strings.TrimPrefix(strings.TrimSpace(value), "/")
 	lower := strings.ToLower(value)
+	separator := -1
+	markerLength := 0
 	for _, marker := range []string{".yaml@", ".yml@"} {
-		if separator := strings.Index(lower, marker); separator >= 0 {
-			return value[:separator+len(marker)-1]
+		if index := strings.LastIndex(lower, marker); index > separator {
+			separator = index
+			markerLength = len(marker)
 		}
+	}
+	if separator >= 0 {
+		return value[:separator+markerLength-1]
 	}
 	return value
 }

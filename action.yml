@@ -14,6 +14,9 @@ inputs:
   environment:
     description: Exact GitHub environment label; the action does not create an Actions environment
     required: true
+  job-name:
+    description: Exact REST workflow-job display name, identical on all rollout events; defaults to GITHUB_JOB
+    default: ""
   release-unit-ref:
     description: Immutable artefact or release-manifest digest
     default: ""
@@ -42,7 +45,7 @@ inputs:
     description: Comma-separated original service-affecting source commits
     default: ""
   change-relation-source:
-    description: release_manifest or direct_commit
+    description: release_manifest, or direct_commit when change-shas is exactly GITHUB_SHA
     default: ""
   work-type:
     description: planned or unplanned_remediation
@@ -73,6 +76,7 @@ runs:
     - --event=${{ inputs.event }}
     - --deployment-id=${{ inputs.deployment-id }}
     - --environment=${{ inputs.environment }}
+    - --job-name=${{ inputs.job-name }}
     - --release-unit-ref=${{ inputs.release-unit-ref }}
     - --rollout-group-key=${{ inputs.rollout-group-key }}
     - --service-id=${{ inputs.service-id }}
