@@ -67,5 +67,15 @@ func ParseStatusDescription(description string) (StatusFact, error) {
 		}
 		fact.ReleaseChanged = &changed
 	}
+	if fact.Kind == StatusExposure && (fact.ReleaseChanged == nil || !*fact.ReleaseChanged) {
+		return StatusFact{}, errors.New("production exposure must report changed=true")
+	}
+	if fact.Kind == StatusCompleted {
+		switch fact.Result {
+		case "success", "failure", "cancelled", "skipped", "error":
+		default:
+			return StatusFact{}, errors.New("invalid completion result")
+		}
+	}
 	return fact, nil
 }

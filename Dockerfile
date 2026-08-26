@@ -2,7 +2,6 @@ FROM golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc99
 WORKDIR /src
 RUN apk add --no-cache ca-certificates
 COPY go.mod go.sum ./
-RUN go mod download
 COPY cmd ./cmd
 COPY event ./event
 COPY internal ./internal

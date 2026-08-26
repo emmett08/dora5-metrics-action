@@ -1,6 +1,11 @@
 .git
+.github
 .dora
 config
 examples
-internal/**/*_test.go
+**/*_test.go
+coverage.out
+dora-action
 README.md
+RELEASING.md
+SECURITY.md
